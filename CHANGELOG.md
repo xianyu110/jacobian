@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.12.1](https://github.com/morluto/jacobian/compare/jacobian-v0.12.0...jacobian-v0.12.1) (2026-08-14)
+
+
+### Documentation
+
+* align state migration references ([a06671f](https://github.com/morluto/jacobian/commit/a06671f3c703588f4246367352abec4ce179fe31))
+* document MCP argument validation boundary ([1a912de](https://github.com/morluto/jacobian/commit/1a912de28b252343ee7173047f1fc97e0898000c))
+
 ## [0.12.0](https://github.com/morluto/jacobian/compare/jacobian-v0.11.0...jacobian-v0.12.0) (2026-08-13)
 
 
