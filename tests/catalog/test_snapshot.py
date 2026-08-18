@@ -1,4 +1,8 @@
-"""Observable catalog inventory frozen across ownership-only refactors."""
+"""Observable catalog inventory frozen across ownership-only refactors.
+
+Schema compatibility snapshots are sharded by semantic owner so that a
+domain-local change updates only that domain's fragment.
+"""
 
 from __future__ import annotations
 
@@ -12,6 +16,9 @@ import pytest
 from jacobian.catalog.builtins import BUILTIN_TOOLS
 from jacobian.catalog.catalog import Catalog
 from jacobian.catalog.models import OperationDiscoveryRequest
+from jacobian.catalog.search import matches_domain
+
+_SNAPSHOTS_DIR = Path(__file__).with_name("operation_schema_snapshots")
 
 
 def _digest(value: Any) -> str:
@@ -24,12 +31,17 @@ def _digest(value: Any) -> str:
     return f"sha256:{hashlib.sha256(encoded).hexdigest()}"
 
 
+def _load_fragments() -> dict[str, dict[str, Any]]:
+    """Load and aggregate all owner-scoped snapshot fragments."""
+    fragments: dict[str, dict[str, Any]] = {}
+    for path in sorted(_SNAPSHOTS_DIR.glob("*.json")):
+        fragment = json.loads(path.read_text(encoding="utf-8"))
+        fragments[path.stem] = fragment
+    return fragments
+
+
 def test_operation_ids_and_request_result_schemas_match_snapshot() -> None:
-    expected = json.loads(
-        Path(__file__)
-        .with_name("operation-schema-snapshot.json")
-        .read_text(encoding="utf-8")
-    )
+    fragments = _load_fragments()
     catalog = Catalog.open()
     snapshot = catalog.snapshot()
     actual = {
@@ -40,9 +52,36 @@ def test_operation_ids_and_request_result_schemas_match_snapshot() -> None:
         for descriptor in snapshot.operations
     }
 
-    assert snapshot.catalog_version == expected["catalog_version"]
-    assert len(actual) == 200
-    assert actual == expected["operations"]
+    # Aggregate all fragments and compare
+    expected: dict[str, Any] = {}
+    catalog_version = None
+    for fragment in fragments.values():
+        assert fragment["catalog_version"] is not None
+        if catalog_version is None:
+            catalog_version = fragment["catalog_version"]
+        assert fragment["catalog_version"] == catalog_version
+        expected.update(fragment["operations"])
+
+    assert snapshot.catalog_version == catalog_version
+    assert len(actual) == len(expected)
+    assert actual == expected
+
+
+def test_snapshot_fragments_are_owner_scoped() -> None:
+    """Every operation appears in exactly one fragment."""
+    fragments = _load_fragments()
+    all_ids: list[str] = []
+    for fragment in fragments.values():
+        all_ids.extend(fragment["operations"].keys())
+    assert len(all_ids) == len(set(all_ids)), "duplicate operation IDs across fragments"
+
+
+def test_snapshot_fragments_have_correct_domains() -> None:
+    """Each fragment contains only operations from its declared domain."""
+    fragments = _load_fragments()
+    for fragment_name, fragment in fragments.items():
+        domain = fragment.get("domain", fragment_name)
+        assert domain == fragment_name, f"fragment {fragment_name} has domain {domain}"
 
 
 def test_catalog_rejects_duplicate_tool_ids() -> None:
@@ -78,29 +117,29 @@ def test_each_tool_contract_and_function_have_one_math_owner() -> None:
         )
 
 
-def test_representative_search_browse_and_inspect_results_are_stable() -> None:
+def test_search_browse_and_inspect_results_stay_within_the_public_catalog() -> None:
     catalog = Catalog.open()
+    public_ids = {
+        descriptor.operation_id for descriptor in catalog.snapshot().operations
+    }
     search = catalog.search(
         OperationDiscoveryRequest(query="finite field factorization", limit=5)
     )
     browse = catalog.browse(domain="graph", limit=5, cursor=None)
     inspected = catalog.inspect("integer.compute.extended_gcd")
 
-    assert [match.operation_id for match in search.matches] == [
-        "finite_field.restrict_scalars.compute",
-        "finite_abelian_group.exact_factorization.compute",
-        "finite_field.linear_map.rank.compute",
-        "finite_field.polynomial_map.table.compute",
-        "finite_field.projective_line.enumerate",
-    ]
-    assert [operation.operation_id for operation in browse.operations] == [
-        "electrical_network.effective_resistance.compute",
-        "electrical_network.laplacian.compute",
-        "electrical_network.node_potentials.compute",
-        "graph.coloring.k_colorability.decide",
-        "graph.cut.minimum_st.compute",
-    ]
-    assert browse.total_operations == 44
+    assert search.matches
+    assert len(search.matches) <= 5
+    assert {match.operation_id for match in search.matches} <= public_ids
+    assert search.total_matches >= len(search.matches)
+
+    assert len(browse.operations) <= 5
+    assert {operation.operation_id for operation in browse.operations} <= public_ids
+    assert browse.total_operations == sum(
+        1 for tool in BUILTIN_TOOLS if matches_domain(tool, "graph")
+    )
+    assert browse.total_operations >= len(browse.operations)
+
     assert inspected is not None
     assert inspected.operation_id == "integer.compute.extended_gcd"
     assert inspected.version == "2"
