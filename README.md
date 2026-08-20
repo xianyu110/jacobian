@@ -43,6 +43,18 @@ for what semantic atomicity means and how the operation vocabulary grows.
 
 ## Quickstart
 
+Set up Jacobian for your agents with a single command. The setup command
+requires Node.js 18 or newer and `uvx` on your `PATH`.
+
+```sh
+npx jacobian@latest setup
+```
+
+Choose detected agents and review the changes before they are written. Setup
+does not install Node.js, Python, `uv`, or an agent. For automation, preview
+an explicit plan with `npx jacobian@latest setup --codex --dry-run`; use
+`--yes` only with explicit agent flags or `--all`.
+
 Run the canonical Python MCP command without installing Jacobian globally:
 
 ```sh
@@ -106,7 +118,7 @@ for the maintained operation portfolio and
 
 ## Status
 
-Jacobian 0.12.0 is pre-stable. Its published package and operation contracts
+Jacobian 0.13.0 <!-- x-release-please-version --> is pre-stable. Its published package and operation contracts
 describe the supported surface; experimental operation contracts may change
 between releases.
 
