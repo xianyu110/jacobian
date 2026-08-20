@@ -71,6 +71,15 @@ another system, ask what mathematical fact or object it needed rather than which
 helper function it called. Work backward from that result to the stable
 mathematical boundary.
 
+Treat the trajectory as evidence, not as the operation specification. Bind an
+availability claim to the catalog and repository revision visible in that
+session, and distinguish an operation that was unavailable, undiscovered,
+unselected, called incorrectly, or genuinely insufficient. Preserve the exact
+scope of the fallback result as well: a numerical candidate, finite search, or
+successful one-off computation does not establish an exact general contract.
+Verify the current catalog and source before turning the observation into an
+operation proposal.
+
 For example, bespoke enumeration of simple cycles of a fixed length may expose
 a need for a fixed-length-cycle witness. Inspection may reveal a deeper reusable
 relation such as finite subgraph embedding. The deeper abstraction is not
@@ -92,6 +101,14 @@ Not every failed attempt reveals a missing operation.
 | Reasoning | The necessary operations exist but the model does not find the strategy. | Improve reasoning or evaluation rather than the catalog. |
 
 Only a genuine operation gap normally motivates a new public operation.
+
+Gap diagnosis and public-operation admission are separate decisions. A focused
+issue may record a reusable missing postcondition even when the available
+evidence does not yet establish enough leverage for the agent-visible catalog,
+or when the eventual disposition may be `NATIVE_ONLY`, `SPLIT`, or `DROP`.
+Admission gates decide that later disposition; they should not suppress an
+evidence-backed gap record. Conversely, recording an operation gap does not
+pre-admit a catalog operation.
 
 ## What tends to be useful
 
