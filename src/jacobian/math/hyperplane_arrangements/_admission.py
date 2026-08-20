@@ -7,18 +7,23 @@ from jacobian.catalog.admission import (
     OperationAdmission,
     OperationRegistration,
 )
-from jacobian.math.analysis._tools import TOOLS
+from jacobian.math.hyperplane_arrangements._tools import TOOLS
 
 ADMISSIONS: tuple[OperationAdmission, ...] = (
     OperationAdmission(
-        "analysis.real_function.point_enclosure.compute",
+        "arrangement.construct",
         AdmissionDecision.KEEP,
         "distinct exact bounded mathematical value or invariant with material computational or reliability leverage",
     ),
     OperationAdmission(
-        "interval.compute.enclosure",
+        "arrangement.characteristic_polynomial.compute",
         AdmissionDecision.KEEP,
-        "distinct rigorous bounded enclosure for composable user-defined expressions",
+        "distinct exact bounded mathematical value or invariant with material computational or reliability leverage",
+    ),
+    OperationAdmission(
+        "arrangement.chamber_count.compute",
+        AdmissionDecision.KEEP,
+        "distinct exact bounded mathematical value or invariant with material computational or reliability leverage",
     ),
 )
 
