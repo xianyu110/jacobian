@@ -18,7 +18,22 @@ ADMISSIONS: tuple[OperationAdmission, ...] = (
     OperationAdmission(
         "petri_net.reachability_graph.compute",
         AdmissionDecision.KEEP,
-        "bounded reachability construction with an explicit typed completeness frontier after the #1978 contract repair",
+        "aggregate-bounded reachability with exact frontier and marking-envelope escape witnesses",
+    ),
+    OperationAdmission(
+        "petri_net.enabled_transitions.compute",
+        AdmissionDecision.KEEP,
+        "exact enabled-transition indices for a bounded marking",
+    ),
+    OperationAdmission(
+        "petri_net.incidence_matrix.compute",
+        AdmissionDecision.KEEP,
+        "exact incidence matrix of a bounded Petri net",
+    ),
+    OperationAdmission(
+        "petri_net.siphon_trap.check",
+        AdmissionDecision.KEEP,
+        "exact minimal siphon and trap witnesses under bounded place enumeration",
     ),
 )
 
